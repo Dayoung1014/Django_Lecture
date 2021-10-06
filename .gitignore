@@ -115,6 +115,7 @@ venv.bak/
 migrations/
 
 bootstrap/
+_media/ 
 
 # Spyder project settings
 .spyderproject
