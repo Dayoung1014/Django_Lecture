@@ -1,11 +1,14 @@
 from django.test import TestCase, Client
 from bs4 import BeautifulSoup
+from django.contrib.auth.models import User
 from .models import Post
 
 # Create your tests here.
 class TestView(TestCase): #클래스 이름은 Test로 시작해야함
-    def setIP(self):
+    def setUp(self):
         self.client = Client()
+        self.user_james = User.objects.create_user(username='James', password='somepassword')
+        self.user_trump = User.objects.create_user(username='Trump', password='somepassword')
 
     def navbar_test(self, soup):
         # 포스트목록과 같은 네비게이션바가 있는가
@@ -43,15 +46,16 @@ class TestView(TestCase): #클래스 이름은 Test로 시작해야함
         main_area = soup.find('div', id='main-area')
         self.assertIn('아직 게시물이 없습니다.', main_area.text)
 
-
         # 3.1 포스트(게시물)이 2개 존재하는 경우
         post_001 = Post.objects.create(
             title = '첫 번째 포스트입니다',
-            content = 'Hello World!!! We are the world...'
+            content = 'Hello World!!! We are the world...',
+            author = self.user_james
         )
         post_002 = Post.objects.create(
             title = '두 번째 포스트입니다',
-            content = '1등이 전부가 아니잖아요'
+            content = '1등이 전부가 아니잖아요',
+            author = self.user_trump
         )
         self.assertEqual(Post.objects.count(), 2)
         # 3.2 목록 페이지를 새롭게 불러와서(새로고침했을 때)
@@ -65,12 +69,16 @@ class TestView(TestCase): #클래스 이름은 Test로 시작해야함
         # 3.4 '아직 게시물이 없습니다.'라는 문구는 더 이상 나타나지 않는지
         self.assertNotIn('아직 게시물이 없습니다.', main_area.text)
 
+        self.assertIn(self.user_james.username.upper(), main_area.text)
+        self.assertIn(self.user_trump.username.upper(), main_area.text)
+
 
     def test_post_detail(self):
         # 포스트 하나 만들기
         post_001 = Post.objects.create(
             title = '첫 번째 포스트입니다',
-            content = 'Hello World!!! We are the world...'
+            content = 'Hello World!!! We are the world...',
+            author = self.user_james
         )
         # 이 포스트의 url이 /blog/1
         self.assertEqual(post_001.get_absolute_url(), '/blog/1')
@@ -97,4 +105,6 @@ class TestView(TestCase): #클래스 이름은 Test로 시작해야함
 
         # 포스트의 내용이 있는가
         self.assertIn(post_001.content, post_area.text)
+
+        self.assertIn(self.user_james.username.upper(), post_area.text)
 
