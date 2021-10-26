@@ -19,10 +19,11 @@
                         <!-- Preview image figure-->
                         <figure class="mb-4">
                             {% if post.head_image %}
-                                <img class="img-fluid rounded" src="{{ post.head_image.url }}" alt="{{post.title}}의 head image" /></figure>
+                                <img class="img-fluid rounded" src="{{ post.head_image.url }}" alt="{{post.title}}의 head image" />
                             {% else %}
                                 <img class="card-img-top" src="https://picsum.photos/seed/{{post.id}}/800/200" alt="random image" />
                             {% endif %}
+                        </figure>
                         <!-- Post content-->
                         <section class="mb-5">
                             <p> {{ post.content }} </p>
