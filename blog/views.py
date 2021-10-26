@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Post
+from .models import Post, Category
 from django.views.generic import ListView, DetailView
 
 # Create your views here.
@@ -9,10 +9,23 @@ class PostList(ListView):
     #template_name = 'blog/post_list.html'   #cbv는 직접적으로 적어줄 필요는 없지만 template_name인 경우 내가 정해둔 템플릿으로 적용 가능
     # post_list.html 지동으로 연결
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(PostList, self).get_context_data()
+        context['categories'] = Category.objects.all()
+        context['no_category_post_count'] = Post.objects.filter(category=None).count()
+        return context
+
 class PostDetail(DetailView):
     model = Post
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(PostDetail, self).get_context_data()
+        context['categories'] = Category.objects.all()
+        context['no_category_post_count'] = Post.objects.filter(category=None).count()
+        return context
     #template_name = 'blog/post_detail.html'
     # post_detail.html 자동으로 연결
+
 
 '''def index(request):
     posts = Post.objects.all().order_by('-pk') # model에 저장된 post 모두 (all) 가져오기
