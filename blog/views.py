@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Post, Category
+from .models import Post, Category, Tag
 from django.views.generic import ListView, DetailView
 
 # Create your views here.
@@ -30,7 +30,7 @@ class PostDetail(DetailView):
 def category_page(request, slug):
     if slug == 'no_category' :
         category = '미분류'
-        post_list = Post.objects.filter(category=None)
+        post_list = Post.objects.filter(category=None) #일치하는
 
     else:
         category = Category.objects.get(slug=slug) #카테고리 가지고 오기
@@ -42,6 +42,19 @@ def category_page(request, slug):
                 'categories' : Category.objects.all(),
                 'no_category_post_count' : Post.objects.filter(category=None).count(),
                 'category' : category
+            }
+        )
+
+def tag_page(request, slug):
+    tag = Tag.objects.get(slug=slug) #카테고리 가지고 오기
+    post_list = tag.post_set.all() #다대다 #Post.objects.filter(tags=tag) #다대일
+
+    return render(request, 'blog/post_list.html',
+            {
+                'post_list' : post_list,
+                'categories' : Category.objects.all(),
+                'no_category_post_count' : Post.objects.filter(category=None).count(),
+                'tag' : tag
             }
         )
 
