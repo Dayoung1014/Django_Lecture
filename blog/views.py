@@ -27,6 +27,24 @@ class PostDetail(DetailView):
     # post_detail.html 자동으로 연결
 
 
+def category_page(request, slug):
+    if slug == 'no_category' :
+        category = '미분류'
+        post_list = Post.objects.filter(category=None)
+
+    else:
+        category = Category.objects.get(slug=slug) #카테고리 가지고 오기
+        post_list = Post.objects.filter(category=category)
+
+    return render(request, 'blog/post_list.html',
+            {
+                'post_list' : post_list,
+                'categories' : Category.objects.all(),
+                'no_category_post_count' : Post.objects.filter(category=None).count(),
+                'category' : category
+            }
+        )
+
 '''def index(request):
     posts = Post.objects.all().order_by('-pk') # model에 저장된 post 모두 (all) 가져오기
     # .order_by('-pk') -pk 최신순 정렬
