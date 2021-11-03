@@ -103,7 +103,28 @@ class TestView(TestCase): #클래스 이름은 Test로 시작해야함
         self.assertIn(self.post_001.title, main_area.text)
         self.assertNotIn(self.post_002.title, main_area.text)
         self.assertNotIn(self.post_003.title, main_area.text)
-        
+
+    def test_create_post(self):
+        response = self.client.get('/blog/create_post/')
+        self.assertNotEqual(response.status_code, 200)
+        self.client.login(username='Trump', passwowrd='somepassword')
+        response = self.client.get('/blog/create_post/')
+        self.assertEqual(response.status_code, 200)
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        self.assertEqual(soup.title.text, 'Create Post - Blog')
+        main_area = soup.find('div', id='main-area')
+        self.assertIn('Create New Post', main_area.text)
+
+        self.client.post('/blog/create_post/',
+                         {
+                             'title' : 'Post form 만들기',
+                             'content' : 'Post form 페이지 만들기'
+                         })
+        last_post = Post.objects.last()
+        self.assertEqual(last_post.title, 'Post form 만들기')
+        self.assertEqual(last_post.author.username, 'Trump')
+
     def test_post_list(self): #내부 함수는 test로 시작해야함
         self.assertEqual(Post.objects.count(), 3)
 

@@ -10,4 +10,6 @@ urlpatterns = [# 서버IP/blog
 
     path('category/<str:slug>', views.category_page), # 서버IP/blog/category/slug
     path('tag/<str:slug>', views.tag_page), # 서버IP/blog/tag/slug
+
+    path('create_post/', views.PostCreate.as_view()), # 서버IP/blog/tag/slug
 ]
