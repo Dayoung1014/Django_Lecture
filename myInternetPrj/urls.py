@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),    # 서버IP/admin
     path('blog/', include('blog.urls')),    # 서버IP/blog
     path('', include('single_pages.urls')),    # 서버IP/
+    path('markdownx/', include('markdownx.urls'))
 ]
 
 #미디어 파일을 위한 URL 지정
