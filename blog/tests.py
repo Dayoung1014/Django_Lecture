@@ -9,6 +9,8 @@ class TestView(TestCase): #클래스 이름은 Test로 시작해야함
         self.client = Client()
 
         self.user_james = User.objects.create_user(username='James', password='somepassword')
+        self.user_james.is_staff = True
+        self.user_james.save()
         self.user_trump = User.objects.create_user(username='Trump', password='somepassword')
 
         self.category_programming = Category.objects.create(name='programming', slug='programming')
@@ -107,9 +109,14 @@ class TestView(TestCase): #클래스 이름은 Test로 시작해야함
     def test_create_post(self):
         response = self.client.get('/blog/create_post/')
         self.assertNotEqual(response.status_code, 200)
-        self.client.login(username='Trump', passwowrd='somepassword')
+
+        self.client.login(username='Trump', password='somepassword')
         response = self.client.get('/blog/create_post/')
-        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response.status_code, 200) # 일반 유저는 접근 못 함
+
+        self.client.login(username='James', password='somepassword')
+        response = self.client.get('/blog/create_post/')
+        self.assertEqual(response.status_code, 200) # staff 유저만 접근 가능
 
         soup = BeautifulSoup(response.content, 'html.parser')
         self.assertEqual(soup.title.text, 'Create Post - Blog')
@@ -123,7 +130,7 @@ class TestView(TestCase): #클래스 이름은 Test로 시작해야함
                          })
         last_post = Post.objects.last()
         self.assertEqual(last_post.title, 'Post form 만들기')
-        self.assertEqual(last_post.author.username, 'Trump')
+        self.assertEqual(last_post.author.username, 'James')
 
     def test_post_list(self): #내부 함수는 test로 시작해야함
         self.assertEqual(Post.objects.count(), 3)
