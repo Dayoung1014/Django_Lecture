@@ -47,6 +47,49 @@ class TestView(TestCase): #클래스 이름은 Test로 시작해야함
             content = '첫번째 댓글입니다.'
         )
 
+    def test_comment_form(self):
+        self.assertEqual(Comment.objects.count(), 1)
+        self.assertEqual(self.post_001.comment_set.count(), 1)
+
+        # 로그인하지 않은 상태
+        response = self.client.get(self.post_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        comment_area = soup.find('div', id='comment-area')
+        self.assertIn('Log in and leave a comment', comment_area.text)
+        self.assertFalse(comment_area('form', id='comment-form'))
+
+        # 로그인 한 상태
+        self.client.login(username='Trump', password='somepassword')
+        response = self.client.get(self.post_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        comment_area = soup.find('div', id='comment-area')
+        self.assertNotIn('Log in and leave a comment', comment_area.text)
+        comment_form = comment_area.find('form', id='comment-form')
+        self.assertTrue(comment_form.find('textarea', id='id_content'))
+
+        # 새로운 commnet 추가
+        response = self.client.post(
+            self.post_001.get_absolute_url() + 'new_comment/',
+            {
+                'content' : '두번째 댓글입니다.'
+            },
+            follow = True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Comment.objects.count(), 2)
+        self.assertEqual(self.post_001.comment_set.count(), 2)
+
+        # 잘 나타나고 있는가
+        new_comment = Comment.objects.last()
+        soup = BeautifulSoup(response.content, 'html.parser')
+        self.assertIn(new_comment.post.title, soup.title.text)
+        comment_area = soup.find('div', id='comment-area')
+        new_comment_div = comment_area.find('div', id=f'comment-{new_comment.pk}')
+        self.assertIn('Trump', new_comment_div.text)
+        self.assertIn('두번째 댓글입니다.', new_comment_div.text)
+
     def navbar_test(self, soup):
         # 포스트목록과 같은 네비게이션바가 있는가
         navbar = soup.nav
@@ -250,7 +293,7 @@ class TestView(TestCase): #클래스 이름은 Test로 시작해야함
 
     def test_post_detail(self):
         # 이 포스트의 url이 /blog/1
-        self.assertEqual(self.post_001.get_absolute_url(), '/blog/1')
+        self.assertEqual(self.post_001.get_absolute_url(), '/blog/1/')
 
         # url에 의해 정상적으로 상세페이지를 불러오는가
         response = self.client.get('/blog/1/')
