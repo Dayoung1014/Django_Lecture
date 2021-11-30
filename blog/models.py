@@ -60,6 +60,13 @@ class Post(models.Model):
     def get_content_markdown(self):
         return markdown(self.content)
 
+    def get_avatar_url(self):
+        if self.author.socialaccount_set.exists():
+            return self.author.socialaccount_set.first().get_avatar_url()
+
+        else:
+            return 'https://doitdjango.com/avatar/id/434/9bc8058cdec56c97/svg/{{self.author.email}}'
+
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE) #다대일관계
     # on_delete=models.CASCADE 글 지워지면 댓글도 지워짐
